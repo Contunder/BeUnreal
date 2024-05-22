@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "416540678513",
+    "firebase_url": "https://beunreal-d5c41-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "beunreal-d5c41",
+    "storage_bucket": "beunreal-d5c41.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:416540678513:android:2b7fbc82d5fdc750977ed0",
+        "android_client_info": {
+          "package_name": "com.supinfo.beunreal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPVWtcaHT5W4aPjo8FRcT3r6mm4gxXTqM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
