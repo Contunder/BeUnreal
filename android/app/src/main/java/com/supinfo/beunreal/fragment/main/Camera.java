@@ -74,7 +74,8 @@ public class Camera extends Fragment implements View.OnClickListener {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        screenWidth = getScreenSize().x;
+        screenHeight = getScreenSize().y;
         surfaceTextureListener = initSurfaceTextureListener();
         stateCallback = initStateCallback();
     }
