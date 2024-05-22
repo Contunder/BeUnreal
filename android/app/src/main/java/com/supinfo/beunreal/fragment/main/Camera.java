@@ -1,11 +1,9 @@
 package com.supinfo.beunreal.fragment.main;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
@@ -15,47 +13,38 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Range;
 import android.util.Size;
 import android.view.Display;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.Toast;
+import android.widget.EditText;
+import android.widget.ImageButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.supinfo.beunreal.MainActivity;
 import com.supinfo.beunreal.R;
 
 import java.util.Collections;
 
 
-@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class Camera extends Fragment  {
-    public static Fragment create() {
-        return new Camera();
-    }
-    public static Bitmap bitmap;
-
-
+public class Camera extends Fragment implements View.OnClickListener {
 
     public  TextureView textureView;
-    private ImageView CaptureBtn;
     private View view;
 
-    private static final int CAMERA_FRAGMENT_PERMISSIONS_CODE = 0;
     private int cameraFacing;
 
     private Size previewSize;
@@ -73,10 +62,10 @@ public class Camera extends Fragment  {
 
     private Handler backgroundHandler;
     private HandlerThread backgroundThread;
-    private CameraCharacteristics  mCameraCharacteristics;
 
     private int screenWidth;
     private int screenHeight;
+    private ImageButton mProfile;
 
     public static Camera newInstance() {
         return new Camera();
@@ -86,47 +75,72 @@ public class Camera extends Fragment  {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        surfaceTextureListener = initSurfaceTextureListener();
+        stateCallback = initStateCallback();
+    }
+
+    /**
+     * Initializes the UI elements
+     */
+    private void initializeObjects() {
+        ImageButton mReverse = view.findViewById(R.id.reverse);
+        mProfile = view.findViewById(R.id.profile);
+        EditText mSearch = view.findViewById(R.id.search);
+        ImageButton mFlash = view.findViewById(R.id.flash);
+
+        mReverse.setOnClickListener(this);
+        mProfile.setOnClickListener(this);
+        mSearch.setOnClickListener(this);
+        mFlash.setOnClickListener(this);
 
         screenWidth = getScreenSize().x;
         screenHeight = getScreenSize().y;
 
-        requestPermissions(new String[]{Manifest.permission.CAMERA,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                CAMERA_FRAGMENT_PERMISSIONS_CODE);
-
         cameraFacing = CameraCharacteristics.LENS_FACING_BACK;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            cameraManager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
-        }
+        cameraManager = (CameraManager) requireActivity().getSystemService(Context.CAMERA_SERVICE);
 
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (getActivity() != null) {
+                    if (((MainActivity) getActivity()).getUser().getImage() != null)
+                        Glide.with(getActivity())
+                                .load(((MainActivity) getActivity()).getUser().getImage())
+                                .apply(RequestOptions.circleCropTransform())
+                                .into(mProfile);
 
-        surfaceTextureListener = initSurfaceTextureListener();
-        stateCallback = initStateCallback();
+                    handler.postDelayed(this, 1000);
+                }
+
+            }
+        }, 1000);
+
     }
 
     private TextureView.SurfaceTextureListener initSurfaceTextureListener() {
         return new TextureView.SurfaceTextureListener() {
 
             @Override
-            public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture,
+            public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surfaceTexture,
                                                   int width, int height) {
                 setUpCamera(screenWidth, screenHeight);
                 openCamera();
             }
 
             @Override
-            public void onSurfaceTextureSizeChanged(SurfaceTexture surfaceTexture,
+            public void onSurfaceTextureSizeChanged(@NonNull SurfaceTexture surfaceTexture,
                                                     int width, int height) {
                 // onSurfaceTextureSizeChanged()
             }
 
             @Override
-            public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
+            public boolean onSurfaceTextureDestroyed(@NonNull SurfaceTexture surfaceTexture) {
                 return false;
             }
 
             @Override
-            public void onSurfaceTextureUpdated(SurfaceTexture surfaceTexture) {
+            public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surfaceTexture) {
                 // onSurfaceTextureUpdated()
             }
 
@@ -135,44 +149,37 @@ public class Camera extends Fragment  {
     }
 
     private CameraDevice.StateCallback initStateCallback() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return new CameraDevice.StateCallback() {
-                @Override
-                public void onOpened(@NonNull CameraDevice cameraDevice) {
-                    Camera.this.cameraDevice = cameraDevice;
-                    createCameraPreviewSession();
+        return new CameraDevice.StateCallback() {
+            @Override
+            public void onOpened(@NonNull CameraDevice cameraDevice) {
+                Camera.this.cameraDevice = cameraDevice;
+                createCameraPreviewSession();
 
-                }
+            }
 
-                @Override
-                public void onDisconnected(@NonNull CameraDevice cameraDevice) {
-                    cameraDevice.close();
-                    Camera.this.cameraDevice = null;
-                }
+            @Override
+            public void onDisconnected(@NonNull CameraDevice cameraDevice) {
+                cameraDevice.close();
+                Camera.this.cameraDevice = null;
+            }
 
-                @Override
-                public void onError(@NonNull CameraDevice cameraDevice, int error) {
-                    cameraDevice.close();
-                    Camera.this.cameraDevice = null;
-                }
-            };
-        }
-        return null;
+            @Override
+            public void onError(@NonNull CameraDevice cameraDevice, int error) {
+                cameraDevice.close();
+                Camera.this.cameraDevice = null;
+            }
+        };
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.fragment_camera_view, container, false);
         textureView = view.findViewById(R.id.textureView);
-
+        initializeObjects();
         try
         {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                for (String cameraId : cameraManager.getCameraIdList()) {
-                    mCameraCharacteristics = cameraManager.getCameraCharacteristics(cameraId);
-                }
+            for (String cameraId : cameraManager.getCameraIdList()) {
+                CameraCharacteristics mCameraCharacteristics = cameraManager.getCameraCharacteristics(cameraId);
             }
 
         } catch (CameraAccessException e) {
@@ -186,7 +193,7 @@ public class Camera extends Fragment  {
     }
 
     protected Point getScreenSize() {
-        Display display = getActivity().
+        Display display = requireActivity().
                 getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
@@ -194,23 +201,11 @@ public class Camera extends Fragment  {
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        for (int grantResult : grantResults) {
-            if (grantResult == PackageManager.PERMISSION_DENIED) {
-                Toast.makeText(getContext(), "Couldn't access camera or save picture",
-                        Toast.LENGTH_SHORT).show();
-                getActivity().finish();
-            }
-        }
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
 
         if (getActivity() != null) {
-            getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         }
 
         openBackgroundThread();
@@ -219,13 +214,7 @@ public class Camera extends Fragment  {
         if (getView() != null) {
             getView().setFocusableInTouchMode(true);
             getView().requestFocus();
-            getView().setOnKeyListener(new View.OnKeyListener() {
-                @Override
-                public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
-
-                    return false;
-                }
-            });
+            getView().setOnKeyListener((view, keyCode, keyEvent) -> false);
         }
     }
 
@@ -250,6 +239,7 @@ public class Camera extends Fragment  {
                         cameraFacing) {
                     StreamConfigurationMap streamConfigurationMap = cameraCharacteristics.get(
                             CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+                    assert streamConfigurationMap != null;
                     previewSize = chooseOptimalSize(streamConfigurationMap
                             .getOutputSizes(SurfaceTexture.class), width, height);
                     this.cameraId = cameraId;
@@ -265,7 +255,7 @@ public class Camera extends Fragment  {
 
     private void openCamera() {
         try {
-            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA)
+            if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
                     == PackageManager.PERMISSION_GRANTED) {
                 cameraManager.openCamera(cameraId, stateCallback, backgroundHandler);
             }
@@ -277,6 +267,7 @@ public class Camera extends Fragment  {
     private void createCameraPreviewSession() {
         try {
             SurfaceTexture surfaceTexture = textureView.getSurfaceTexture();
+            assert surfaceTexture != null;
             surfaceTexture.setDefaultBufferSize(previewSize.getWidth(), previewSize.getHeight());
             Surface previewSurface = new Surface(surfaceTexture);
             captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
@@ -384,9 +375,26 @@ public class Camera extends Fragment  {
 
 
     public void TakePhoto(){
-        bitmap = textureView.getBitmap();
-        Toast.makeText(getContext(), "You're beautiful!", Toast.LENGTH_SHORT).show();
+        ((MainActivity) requireActivity()).setBitmapToSend(textureView.getBitmap());
+        ((MainActivity) requireActivity()).openDisplayImageFragment();
     }
+
+    /**
+     * Handles onClick events
+     */
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.profile:
+                ((MainActivity) requireActivity()).openProfileEditFragment();
+                break;
+            case R.id.search:
+                ((MainActivity) requireActivity()).openFindUsersFragment();
+                break;
+        }
+    }
+
+
 
 
 }
