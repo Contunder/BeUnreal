@@ -22,14 +22,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.supinfo.beunreal.R;
 import com.supinfo.beunreal.Objects.UserObject;
 import com.supinfo.beunreal.fragment.NewSnap.ChooseReceiverFragment;
 import com.supinfo.beunreal.fragment.NewSnap.DisplaySnapFragment;
 import com.supinfo.beunreal.fragment.Other.DisplayImageFragment;
 import com.supinfo.beunreal.fragment.Other.FindUsersFragment;
 import com.supinfo.beunreal.fragment.Other.ProfileEditFragment;
-import com.supinfo.beunreal.fragment.main.CameraViewFragment;
+import com.supinfo.beunreal.fragment.main.Camera;
 import com.supinfo.beunreal.fragment.main.StoryFragment;
 
 import java.util.ArrayList;
@@ -283,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.capture:
                 if (viewPager.getCurrentItem() == 1)
-                    ((CameraViewFragment) ((MyPagerAdapter) adapterViewPager).getCameraFragment()).TakePhoto();
+                    ((Camera) ((MyPagerAdapter) adapterViewPager).getCameraFragment()).TakePhoto();
                 else
                     viewPager.setCurrentItem(1);
                 break;
@@ -323,7 +322,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     return chatFragment;
                 case 1:
                     if (cameraFragment == null)
-                        cameraFragment = CameraViewFragment.newInstance();
+                        cameraFragment = Camera.newInstance();
                     return cameraFragment;
                 case 2:
                     if (storyFragment == null)

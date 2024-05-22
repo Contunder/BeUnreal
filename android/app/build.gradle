@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 29
     defaultConfig {
-        applicationId "com.simcoder.snapchatclone"
+        applicationId "com.supinfo.beunreal"
         minSdkVersion 16
         targetSdkVersion 29
         versionCode 1
@@ -39,17 +39,8 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.10.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
 
-    implementation 'com.wonderkiln:camerakit:0.13.1'
+//    implementation 'com.wonderkiln:camerakit:0.13.1'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
 }
-
-
-
-
-
-
-
-
-
 
 apply plugin: 'com.google.gms.google-services'
