@@ -11,16 +11,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.FirebaseDatabase;
+import com.supinfo.beunreal.Login.Gateway.RegisterDto;
+import com.supinfo.beunreal.Login.Retrofit.RetrofitAPI;
 import com.supinfo.beunreal.R;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 
 /**
@@ -63,7 +64,7 @@ public class DetailsFragment extends Fragment implements View.OnClickListener {
      * Called any time the user clicks the register button.
      * Does some checks to see if the user is valid and only then does it create the user
      */
-    private void register() {
+    private void register() throws IOException {
         if (mName.getText().length() == 0) {
             mName.setError("please fill this field");
             return;
@@ -86,23 +87,7 @@ public class DetailsFragment extends Fragment implements View.OnClickListener {
         final String password = mPassword.getText().toString();
         final String name = mName.getText().toString();
 
-        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password).addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
-            @Override
-            public void onComplete(@NonNull Task<AuthResult> task) {
-                if (!task.isSuccessful()) {
-                    Snackbar.make(view.findViewById(R.id.layout), "sign up error", Snackbar.LENGTH_SHORT).show();
-                } else {
-                    String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-                    //Saves the user's info in the database
-                    Map<String, Object> mNewUserMap = new HashMap<>();
-                    mNewUserMap.put("email", email);
-                    mNewUserMap.put("name", name);
-
-                    FirebaseDatabase.getInstance().getReference().child("users").child(uid).updateChildren(mNewUserMap);
-                }
-            }
-        });
+        postData(name, email, password);
 
     }
 
@@ -124,7 +109,41 @@ public class DetailsFragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.register) {
-            register();
+            try {
+                register();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
+
+    private void postData(String name, String email, String password) {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("http://127.0.0.1:8080/api/auth/register/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        RetrofitAPI retrofitAPI = retrofit.create(RetrofitAPI.class);
+
+        RegisterDto registerDto = new RegisterDto(name, email, password);
+
+        Call<RegisterDto> call = retrofitAPI.createPost(registerDto);
+
+        call.enqueue(new Callback<RegisterDto>() {
+            @Override
+            public void onResponse(Call<RegisterDto> call, Response<RegisterDto> response) {
+                RegisterDto responseFromAPI = response.body();
+                String responseString = "Response Code : " + response.code() + "\nName : " + responseFromAPI.getName() + "\n" + "Email : " + responseFromAPI.getEmail();
+                mName.setText(responseString);
+            }
+
+            @Override
+            public void onFailure(Call<RegisterDto> call, Throwable t) {
+
+                mName.setError("Error found is : " + t.getMessage());
+            }
+        });
+    }
+
 }
