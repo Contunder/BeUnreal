@@ -11,11 +11,19 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.FirebaseDatabase;
 import com.supinfo.beunreal.Login.Gateway.RegisterDto;
 import com.supinfo.beunreal.Login.Retrofit.RetrofitAPI;
 import com.supinfo.beunreal.R;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -86,8 +94,24 @@ public class DetailsFragment extends Fragment implements View.OnClickListener {
         final String email = mEmail.getText().toString();
         final String password = mPassword.getText().toString();
         final String name = mName.getText().toString();
+        FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password).addOnCompleteListener(getActivity(), new OnCompleteListener<AuthResult>() {
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+                if (!task.isSuccessful()) {
+                    Snackbar.make(view.findViewById(R.id.layout), "sign up error", Snackbar.LENGTH_SHORT).show();
+                } else {
+                    String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        postData(name, email, password);
+                    //Saves the user's info in the database
+                    Map<String, Object> mNewUserMap = new HashMap<>();
+                    mNewUserMap.put("email", email);
+                    mNewUserMap.put("name", name);
+
+                    FirebaseDatabase.getInstance().getReference().child("users").child(uid).updateChildren(mNewUserMap);
+                }
+            }
+        });
+//        postData(name, email, password);
 
     }
 
