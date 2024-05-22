@@ -71,15 +71,6 @@ public class Camera extends Fragment implements View.OnClickListener {
         return new Camera();
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        screenWidth = getScreenSize().x;
-        screenHeight = getScreenSize().y;
-        surfaceTextureListener = initSurfaceTextureListener();
-        stateCallback = initStateCallback();
-    }
-
     /**
      * Initializes the UI elements
      */
@@ -96,9 +87,6 @@ public class Camera extends Fragment implements View.OnClickListener {
 
         screenWidth = getScreenSize().x;
         screenHeight = getScreenSize().y;
-
-        cameraFacing = CameraCharacteristics.LENS_FACING_BACK;
-        cameraManager = (CameraManager) requireActivity().getSystemService(Context.CAMERA_SERVICE);
 
         final Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
@@ -177,6 +165,14 @@ public class Camera extends Fragment implements View.OnClickListener {
         view = inflater.inflate(R.layout.fragment_camera_view, container, false);
         textureView = view.findViewById(R.id.textureView);
         initializeObjects();
+        screenWidth = getScreenSize().x;
+        screenHeight = getScreenSize().y;
+
+        cameraFacing = CameraCharacteristics.LENS_FACING_BACK;
+        cameraManager = (CameraManager) requireActivity().getSystemService(Context.CAMERA_SERVICE);
+
+        surfaceTextureListener = initSurfaceTextureListener();
+        stateCallback = initStateCallback();
         try
         {
             for (String cameraId : cameraManager.getCameraIdList()) {
@@ -209,6 +205,7 @@ public class Camera extends Fragment implements View.OnClickListener {
             getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         }
 
+        initializeObjects();
         openBackgroundThread();
         startOpeningCamera();
 

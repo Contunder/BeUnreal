@@ -1,21 +1,17 @@
 package com.supinfo.beunreal.fragment.NewSnap;
 
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -35,6 +31,7 @@ import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * This Fragment appears after the user takes a camera shot.
@@ -115,10 +112,10 @@ public class ChooseReceiverFragment extends Fragment implements View.OnClickList
      * in the database.
      */
     private void saveToStories() {
-        ((MainActivity) getActivity()).showProgressDialog("sending...");
-        Bitmap bitmap = ((MainActivity) getActivity()).getBitmapToSend();
+        ((MainActivity) requireActivity()).showProgressDialog("sending...");
+        Bitmap bitmap = ((MainActivity) requireActivity()).getBitmapToSend();
 
-        final DatabaseReference userStoryDb = FirebaseDatabase.getInstance().getReference().child("users").child(FirebaseAuth.getInstance().getUid()).child("story");
+        final DatabaseReference userStoryDb = FirebaseDatabase.getInstance().getReference().child("users").child(Objects.requireNonNull(FirebaseAuth.getInstance().getUid())).child("story");
         //creates an id for the post
         final String key = userStoryDb.push().getKey();
 
@@ -138,50 +135,35 @@ public class ChooseReceiverFragment extends Fragment implements View.OnClickList
         UploadTask uploadTask = filePath.putBytes(dataToUpload);
 
 
-        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                filePath.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        Long currentTimestamp = System.currentTimeMillis();
-                        Long endTimestamp = currentTimestamp + (24 * 60 * 60 * 1000);
+        uploadTask.addOnSuccessListener(taskSnapshot -> filePath.getDownloadUrl().addOnSuccessListener(uri -> {
+            Long currentTimestamp = System.currentTimeMillis();
+            Long endTimestamp = currentTimestamp + (24 * 60 * 60 * 1000);
 
-                        CheckBox mStory = view.findViewById(R.id.story);
-                        //if user wants to save to story then save it
-                        if (mStory.isChecked()) {
-                            Map<String, Object> mapToUpload = new HashMap<>();
-                            mapToUpload.put("imageUrl", uri.toString());
-                            mapToUpload.put("timestampBeg", currentTimestamp);
-                            mapToUpload.put("timestampEnd", endTimestamp);
-                            userStoryDb.child(key).setValue(mapToUpload);
-                        }
-                        //loop through the checked users and send the image to them
-                        for (int i = 0; i < results.size(); i++) {
-                            if (results.get(i).getReceive()) {
-                                DatabaseReference userDb = FirebaseDatabase.getInstance().getReference().child("users").child(results.get(i).getId()).child("received").child(FirebaseAuth.getInstance().getUid());
-                                Map<String, Object> mapToUpload = new HashMap<>();
-                                mapToUpload.put("imageUrl", uri.toString());
-                                mapToUpload.put("timestampBeg", currentTimestamp);
-                                mapToUpload.put("timestampEnd", endTimestamp);
-                                userDb.child(key).setValue(mapToUpload);
-                            }
-                        }
-                        ((MainActivity) getActivity()).clearBackStack();
-                    }
-                });
-
-
+            CheckBox mStory = view.findViewById(R.id.story);
+            //if user wants to save to story then save it
+            if (mStory.isChecked()) {
+                Map<String, Object> mapToUpload = new HashMap<>();
+                mapToUpload.put("imageUrl", uri.toString());
+                mapToUpload.put("timestampBeg", currentTimestamp);
+                mapToUpload.put("timestampEnd", endTimestamp);
+                userStoryDb.child(key).setValue(mapToUpload);
             }
-        });
-
-
-        uploadTask.addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                ((MainActivity) getActivity()).clearBackStack();
+            //loop through the checked users and send the image to them
+            for (int i = 0; i < results.size(); i++) {
+                if (results.get(i).getReceive()) {
+                    DatabaseReference userDb = FirebaseDatabase.getInstance().getReference().child("users").child(results.get(i).getId()).child("received").child(FirebaseAuth.getInstance().getUid());
+                    Map<String, Object> mapToUpload = new HashMap<>();
+                    mapToUpload.put("imageUrl", uri.toString());
+                    mapToUpload.put("timestampBeg", currentTimestamp);
+                    mapToUpload.put("timestampEnd", endTimestamp);
+                    userDb.child(key).setValue(mapToUpload);
+                }
             }
-        });
+            ((MainActivity) requireActivity()).clearBackStack();
+        }));
+
+
+        uploadTask.addOnFailureListener(e -> ((MainActivity) requireActivity()).clearBackStack());
 
     }
 

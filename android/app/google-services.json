@@ -13,7 +13,12 @@
           "package_name": "com.supinfo.beunreal"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "416540678513-ahg9bgv6c1rcuelcq3himfk50dgbapdb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDPVWtcaHT5W4aPjo8FRcT3r6mm4gxXTqM"
@@ -21,7 +26,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "416540678513-ahg9bgv6c1rcuelcq3himfk50dgbapdb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

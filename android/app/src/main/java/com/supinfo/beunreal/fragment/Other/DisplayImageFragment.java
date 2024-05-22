@@ -44,7 +44,7 @@ public class DisplayImageFragment extends Fragment implements View.OnClickListen
 
         mSend.setOnClickListener(this);
 
-        mImage.setImageBitmap(((MainActivity) getActivity()).getBitmapToSend());
+        mImage.setImageBitmap(((MainActivity) requireActivity()).getBitmapToSend());
     }
 
     /**
@@ -55,7 +55,7 @@ public class DisplayImageFragment extends Fragment implements View.OnClickListen
     @Override
     public void onClick(View v) {
         if (v.getId() == R.id.send) {
-            ((MainActivity) getActivity()).openChooseReceiverFragment();
+            ((MainActivity) requireActivity()).openChooseReceiverFragment();
         }
     }
 

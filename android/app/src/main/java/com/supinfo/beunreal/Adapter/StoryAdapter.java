@@ -60,25 +60,22 @@ public class StoryAdapter extends RecyclerView.Adapter<StoryAdapter.StoryViewHol
                     .apply(RequestOptions.circleCropTransform())
                     .into(holder.mProfile);
 
-        holder.mLayout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        holder.mLayout.setOnClickListener(v -> {
 
-                if (usersList.size() == 0)
-                    return;
+            if (usersList.isEmpty())
+                return;
 
-                String userId = usersList.get(holder.getLayoutPosition()).getId();
-                String image = usersList.get(holder.getLayoutPosition()).getImage();
-                String name = usersList.get(holder.getLayoutPosition()).getName();
+            String userId = usersList.get(holder.getLayoutPosition()).getId();
+            String image = usersList.get(holder.getLayoutPosition()).getImage();
+            String name = usersList.get(holder.getLayoutPosition()).getName();
 
-                if (chatOrStory.equals("chat")) {
-                    storyFragment.results.remove(holder.getLayoutPosition());
-                    notifyDataSetChanged();
-                }
-
-                ((MainActivity) context).openDisplaySnapFragment(userId, image, name, chatOrStory);
-
+            if (chatOrStory.equals("chat")) {
+                storyFragment.results.remove(holder.getLayoutPosition());
+                notifyDataSetChanged();
             }
+
+            ((MainActivity) context).openDisplaySnapFragment(userId, image, name, chatOrStory);
+
         });
 
     }

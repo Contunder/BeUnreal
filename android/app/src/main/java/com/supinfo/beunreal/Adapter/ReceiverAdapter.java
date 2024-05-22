@@ -55,7 +55,7 @@ public class ReceiverAdapter extends RecyclerView.Adapter<ReceiverAdapter.Receiv
             }
         });
 
-        if (!usersList.get(holder.getLayoutPosition()).getImage().isEmpty())
+        if (usersList.get(holder.getLayoutPosition()).getImage() == null)
             Glide.with(context)
                     .load(usersList.get(holder.getLayoutPosition()).getImage())
                     .apply(RequestOptions.circleCropTransform())

@@ -272,7 +272,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     /**
      * Handles onClick events
      */
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onClick(View v) {
         switch (v.getId()) {

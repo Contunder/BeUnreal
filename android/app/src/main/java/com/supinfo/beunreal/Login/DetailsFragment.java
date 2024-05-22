@@ -17,19 +17,11 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.FirebaseDatabase;
-import com.supinfo.beunreal.Login.Gateway.RegisterDto;
-import com.supinfo.beunreal.Login.Retrofit.RetrofitAPI;
 import com.supinfo.beunreal.R;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 
 /**
@@ -111,7 +103,6 @@ public class DetailsFragment extends Fragment implements View.OnClickListener {
                 }
             }
         });
-//        postData(name, email, password);
 
     }
 
@@ -139,35 +130,6 @@ public class DetailsFragment extends Fragment implements View.OnClickListener {
                 e.printStackTrace();
             }
         }
-    }
-
-    private void postData(String name, String email, String password) {
-
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl("http://127.0.0.1:8080/api/auth/register/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-
-        RetrofitAPI retrofitAPI = retrofit.create(RetrofitAPI.class);
-
-        RegisterDto registerDto = new RegisterDto(name, email, password);
-
-        Call<RegisterDto> call = retrofitAPI.createPost(registerDto);
-
-        call.enqueue(new Callback<RegisterDto>() {
-            @Override
-            public void onResponse(Call<RegisterDto> call, Response<RegisterDto> response) {
-                RegisterDto responseFromAPI = response.body();
-                String responseString = "Response Code : " + response.code() + "\nName : " + responseFromAPI.getName() + "\n" + "Email : " + responseFromAPI.getEmail();
-                mName.setText(responseString);
-            }
-
-            @Override
-            public void onFailure(Call<RegisterDto> call, Throwable t) {
-
-                mName.setError("Error found is : " + t.getMessage());
-            }
-        });
     }
 
 }
