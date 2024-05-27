@@ -34,6 +34,8 @@
 
 - ### **Installation**
 
+Project Base in folder android (to run in android studio)
+
   - Java 17
   - Android Gradle Plugin 8.3.2
   - Gradle 8.4
